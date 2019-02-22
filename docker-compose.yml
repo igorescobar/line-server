@@ -1,0 +1,10 @@
+web:
+  build: .
+  environment:
+    - PATH=$PATH:/var/task/node_modules/.bin
+  command: 'pm2-runtime --watch npm -- start'
+  ports:
+    - 3000:3000
+  volumes:
+    - ./:/api:delegated
+    - ./node_modules:/api/node_modules:cached
