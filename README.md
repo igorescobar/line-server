@@ -19,6 +19,10 @@ I'm using express to have a more elegant mapping between routes and the actual i
 ### Byline
 This library allows me to have a read stream of a file and me to bind a event for each line of the file.
 
+### Docker
+Used docker for fast deployment and also to make build less reliable on the `host` that the service are running. Just download and install:
+https://docs.docker.com/v17.12/docker-for-mac/install/
+
 ## Implementation
 First and most importantly, this solution relies entirely on disk (don't run away just yet! :B).
 
