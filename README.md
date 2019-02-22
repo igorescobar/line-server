@@ -26,7 +26,7 @@ For this to work, I'm using a tool called `split` to create chunks of 10.000 lin
 
 After creating the chunks inside of the `static/chunks/` folder the system creates a *map table* to have a in-memory link between `chunk range` and `file ` so when you request a `line-number` the system knows exactly which chunk to look inside.
 
-After this, instead of adding the entire file into memory, `byline` reads even smaller chunks of the file, streams it and flush it after each chunk it consumed. This ensures minimal memory usage.
+After this, instead of adding the entire file into memory, `byline` streams smaller chunks of the shunk file, streams it and flush it after each chunk it consumed. This ensures minimal memory usage.
 
 ### Performance
 #### Beginning of the chunk (best case scenario):
@@ -87,12 +87,10 @@ Total:        779 1031  82.8   1033    1331
 ## Explored possibilities
 
 ### Database implementation
-Probably fastest solution would be to create a model on a database where I could just insert each line of the file to a `table` and I could instantly have a relation between `line -> content`. Adding a index to the file, line column would allow me to to instant searches inside of a file regardless the amount of lines that I would need. I didn't used this because then it would be too obvious and it you woudn't have much code to review.
+Probably fastest solution would be to create a model on a database where I could just insert each line of the file to a `table` and I could instantly have a relation between `line -> content`. Adding a index to the file, line column would allow me to to instant searches inside of a file regardless the amount of lines that I would need. I didn't used this because then it would be too obvious and it you woudn't have much code to review. The only problem I see with this solution is in case we achieve a super higher level of concurrency we could hit `active connection` limitations on this database. Use something like `DynamoDB` could also be an alternative to solve this.
 
 ### In-memory implementation
-Working with memory is always faster but this is a very limited resource. It would allow me to work only with a very limited amount of files and the size of those files would also be very limited since a a file of 1GB would occupy way more than its fisical size after serialized and dumped into the applicatin memory.
-
-## Overall effort (timewise)
+Working with memory is always faster but as always a very limited resource. It would allow me to work only with a very limited amount of files and the size of those files would also be very limited since a a file of 1GB would occupy way more than its fisical size after serialized and dumped into the applicatin memory.
 
 ## How to build it
 ```sh
