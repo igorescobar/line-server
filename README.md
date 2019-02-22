@@ -102,6 +102,10 @@ Working with memory is always faster but as always a very limited resource. It w
 ./run.sh small.txt
 ```
 
+### Testing with different files
+Make sure you add your files to the `src/public/` folder.
+If you add more files make sure to run `./chunks.sh small.txt` to generate the chunks of the new files before running the service.
+
 ## Running tests
 ```sh
 docker-compose run --rm web npm run test
