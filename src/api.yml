@@ -1,0 +1,46 @@
+openapi: 3.0.0
+info:
+  title: File API
+  description: Simple API to manage files.
+  version: 1.0.0
+servers:
+  - url: http://api.example.com/
+    description: Optional server description, e.g. Main (production) server
+  - url: http://staging-api.example.com
+    description: Optional server description, e.g. Internal staging server for testing
+paths:
+  /lines:
+    get:
+      tags: ["lines"]
+      summary: "List of current files"
+      responses:
+        '501':
+          description: not implemented
+          content:
+            text/plain:
+              schema:
+                type: string
+  /lines/{lineNumber}:
+    get:
+      tags: ["lines"]
+      summary: Returns the contents of a specific file from a specific file.
+      parameters:
+        - in: path
+          name: lineNumber
+          schema:
+            type: integer
+          required: true
+          description: Number of the line you want to read.
+      responses:
+        '200':
+          description: Succesfull response
+          content:
+            text/plain:
+              schema:
+                type: string
+        '413':
+          description: Invalid line or non-existent
+          content:
+            text/plain:
+              schema:
+                type: string
