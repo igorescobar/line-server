@@ -17,20 +17,22 @@ https://salsify.github.io/line-server.html
 I'm using express to have a more elegant mapping between routes and the actual implementation.
 
 ### Byline
-This library allows me to have a read stream of a file and me to bind a event for each line of the file.
+This library allows me to have a read stream of a file to bind an event for each line of the file.
 
 ### Docker
-Used docker for fast deployment and also to make build less reliable on the `host` that the service are running. Just download and install:
+I used docker for fast deployment and also to make build less reliable on the `host` that the service are running. Just download and install:
 https://docs.docker.com/v17.12/docker-for-mac/install/
 
 ## Implementation
 First and most importantly, this solution relies entirely on disk (don't run away just yet! :B).
 
-For this to work, I'm using a tool called `split` to create chunks of 10.000 lines from a given file. This is of course a time-consuming proccess and in a ideal world we would have a mechanism in place that could do it faster after each file is uploaded. Using the `chunks` approach, it allows me to have a predicted response time and memory/CPU consumption regardless the size of the file. Therefore, the fastest response would be if you request the beginning of the chunk and the slowest as you progress to the end of the chunk. So the smaller the chunks faster would be the response time.
+For this to work, I'm using a tool called `split` to create chunks of 10,000 lines from a given file. This is of course a time-consuming process and in an ideal world we would have a mechanism in place that could do it faster after each file is uploaded. Using the `chunks` approach, it allows me to have a predicted response time and memory/CPU consumption regardless the size of the file. Therefore, the fastest response would be if you request the beginning of the chunk, and the slowest as you progress to the end of the chunk. So the smaller the chunks the faster would be the response time.
 
-After creating the chunks inside of the `static/chunks/` folder the system creates a *map table* to have a in-memory link between `chunk range` and `file ` so when you request a `line-number` the system knows exactly which chunk to look inside.
+After creating the chunks inside of the `static/chunks/` folder the system creates a *map table* to have a in-memory link between `chunk range` and `file ` so when you request a `line-number` the system knows exactly in which chunk to look inside.
 
-After this, instead of adding the entire file into memory, `byline` streams smaller chunks of the shunk file, streams it and flush it after each chunk it consumed. This ensures minimal memory usage.
+After this, instead of adding the entire file into memory, `byline` streams smaller chunks of the chunk file, streams it and flushes it after each chunk it consumed. This ensures minimal memory usage.
+
+The API documentation can be found at `src/api.yml` or you can open it [online](https://petstore.swagger.io/?url=https://bitbucket.org/igorescobar/line-server/raw/65b5918072827f5aede29e13f2e126b9ef6f8394/src/api.yml).
 
 ### Performance
 #### Beginning of the chunk (best case scenario):
@@ -84,17 +86,19 @@ Total:        779 1031  82.8   1033    1331
 
 3) To make the application scale in terms of requests, we could just deploy the application using AWS `ECS + Fargate` in order to scale the number of containers we have running based on CPU usage, network traffic or any other metric we might see fit.
 
-4) Since we are working only with one file it didn't cared much about how we store the chunks. To ensure faster access to the files regardless the amount of chunks we might have I would pick a different storage strategy which would be something like `chunks/$chunk_code/$filename` instead of throwing everything inside of the `chunks` folder.
+4) Since we are working with only one file it didn't matter much how we store the chunks. To ensure faster access to the files regardless the amount of chunks we might have I would pick a different storage strategy which would be something like `chunks/$chunk_code/$filename` instead of throwing everything inside of the `chunks` folder.
 
 5) I don't really like usage of the status code `413`. IMHO it can be improved. By defintion `/lines` is the resource and if I'm looking for a resource `/:line_number` that doesn't exist, the correct status should be `404 - Not Found` since it is an imutable file and this line will NEVER exist. The correct way to represent a resource that "existed" before but doens't exist anymore is the status code `410 - Gone` for example. The API Design could also be more extensible like `/files/:name/:line_number` which would allow me to serve multiple files and look for their files.
+
+6) Also, if this was a real product the files would have a better organisation with `controllers`, `models`, etc.
 
 ## Explored possibilities
 
 ### Database implementation
-Probably fastest solution would be to create a model on a database where I could just insert each line of the file to a `table` and I could instantly have a relation between `line -> content`. Adding a index to the file, line column would allow me to to instant searches inside of a file regardless the amount of lines that I would need. I didn't used this because then it would be too obvious and it you woudn't have much code to review. The only problem I see with this solution is in case we achieve a super higher level of concurrency we could hit `active connection` limitations on this database. Use something like `DynamoDB` could also be an alternative to solve this.
+Probably fastest solution would be to create a model on a database where I could just insert each line of the file to a `table` and I could instantly have a relation between `line -> content`. Adding an index to the file, line column would allow instant searches inside of a file regardless the amount of lines that I would need. I didn't use this because then it would be too obvious and you woudn't have much code to review. The only problem I see with this solution is in case we achieve a super high level of concurrency we could hit `active connection` limitations on this database. Using something like `DynamoDB` could also be an alternative solution.
 
 ### In-memory implementation
-Working with memory is always faster but as always a very limited resource. It would allow me to work only with a very limited amount of files and the size of those files would also be very limited since a a file of 1GB would occupy way more than its fisical size after serialized and dumped into the applicatin memory.
+Working with memory is always faster but, as always, a very limited resource. It would allow me to work only with a very limited amount of files and the size of those files would also be very limited since a a file of 1GB would occupy way more than its physical size after serialized and dumped into the application memory.
 
 ## How to build it
 ```sh
