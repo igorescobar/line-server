@@ -12,7 +12,10 @@ https://salsify.github.io/line-server.html
   * 200 for success
   * 413 (!?!) for invalid line index.
 
-## Libraries & Frameworks
+## Stack
+### Node.js
+O picked Node.js because it uses an event-driven, non-blocking I/O model that makes it lightweight and efficient, perfect for data-intensive real-time applications that run across distributed devices.
+
 ### Express
 I'm using express to have a more elegant mapping between routes and the actual implementation.
 
@@ -88,9 +91,11 @@ Total:        779 1031  82.8   1033    1331
 
 4) Since we are working with only one file it didn't matter much how we store the chunks. To ensure faster access to the files regardless the amount of chunks we might have I would pick a different storage strategy which would be something like `chunks/$chunk_code/$filename` instead of throwing everything inside of the `chunks` folder.
 
-5) I don't really like usage of the status code `413`. IMHO it can be improved. By defintion `/lines` is the resource and if I'm looking for a resource `/:line_number` that doesn't exist, the correct status should be `404 - Not Found` since it is an imutable file and this line will NEVER exist. The correct way to represent a resource that "existed" before but doens't exist anymore is the status code `410 - Gone` for example. The API Design could also be more extensible like `/files/:name/:line_number` which would allow me to serve multiple files and look for their files.
+5) Since I don't rely much on memory to solve this I could use a small amount of memory to do some caching on my end to optimize sequential reading and avoid unnecessary I/O usage if this was a use case.
 
-6) Also, if this was a real product the files would have a better organisation with `controllers`, `models`, etc.
+6) I don't really like usage of the status code `413`. IMHO it can be improved. By defintion `/lines` is the resource and if I'm looking for a resource `/:line_number` that doesn't exist, the correct status should be `404 - Not Found` since it is an imutable file and this line will NEVER exist. The correct way to represent a resource that "existed" before but doens't exist anymore is the status code `410 - Gone` for example. The API Design could also be more extensible like `/files/:name/:line_number` which would allow me to serve multiple files and look for their files.
+
+7) Also, if this was a real product the files would have a better organisation with `controllers`, `models`, etc.
 
 ## Explored possibilities
 
